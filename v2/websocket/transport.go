@@ -56,6 +56,8 @@ func (w *ws) Connect() error {
 		if err == websocket.ErrBadHandshake {
 			w.log.Errorf("bad handshake: status code %d", resp.StatusCode)
 		}
+		close(w.quit)       // signal to parent listeners
+		close(w.downstream) // shut down caller's listen channel
 		return err
 	}
 	w.ws = ws
@@ -100,6 +102,8 @@ func (w *ws) Done() <-chan error {
 
 // listen on ws & fwd to listen()
 func (w *ws) listenWs() {
+	w.log.Info("go listenWs() START")
+	defer w.log.Info("go listenWs() FINISH")
 	for {
 		if w.ws == nil {
 			return
@@ -117,7 +121,8 @@ func (w *ws) listenWs() {
 				// a read during normal shutdown results in an OpError: op on closed connection
 				if _, ok := err.(*net.OpError); ok {
 					// general read error on a closed network connection, OK
-					return
+					w.log.Error("go listenWs: general read error on a closed network connection")
+					//return
 				}
 				w.cleanup(err)
 				return

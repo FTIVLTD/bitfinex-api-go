@@ -197,7 +197,7 @@ func NewWithParamsAsyncFactoryNonce(params *Parameters, async AsynchronousFactor
 		parameters:     params,
 		listener:       make(chan interface{}),
 		terminal:       false,
-		resetWebsocket: make(chan bool),
+		resetWebsocket: make(chan bool, 1),
 		shutdown:       make(chan bool),
 		asynchronous:   async.Create(),
 		log:            params.Logger,
@@ -234,9 +234,14 @@ func (c *Client) IsConnected() bool {
 }
 
 func (c *Client) listenDisconnect() {
+	c.log.Info("go listenDisconnect() START")
+	defer c.log.Info("go listenDisconnect() FINISH")
 	for {
 		select {
 		case <-c.resetWebsocket:
+			if !c.isConnected {
+				continue
+			}
 			// transport websocket is shutting down
 			c.lock.Lock()
 			c.isConnected = false
@@ -244,20 +249,34 @@ func (c *Client) listenDisconnect() {
 			err := c.reconnect(fmt.Errorf("reconnecting"))
 			if err != nil {
 				c.killListener(err)
+				if !c.terminal {
+					c.subscriptions.Close()
+				}
 				c.log.Warningf("socket disconnect: %s", err.Error())
 				// exit routine if failed to reconnect
 				return
 			}
 		case <-c.shutdown:
+			if c.isConnected {
+				c.killListener(nil)
+			}
 			// websocket client killed completely
 			return
 		case e := <-c.subscriptions.ListenDisconnect(): // subscription heartbeat timeout
 			if e != nil {
 				c.log.Warningf("heartbeat disconnect: %s", e.Error())
 			}
+			if c.terminal || !c.isConnected {
+				continue
+			}
 			c.lock.Lock()
 			c.isConnected = false
 			c.lock.Unlock()
+			if !c.parameters.AutoReconnect {
+				c.killListener(nil)
+				go c.Close()
+				continue
+			}
 			if e != nil {
 				c.closeAsyncAndWait(c.parameters.ShutdownTimeout)
 				err := c.reconnect(e)
@@ -356,6 +375,8 @@ func (c *Client) reconnect(err error) error {
 
 // start this goroutine before connecting, but this should die during a connection failure
 func (c *Client) listenUpstream(ws Asynchronous) {
+	c.log.Info("go listenUpstream() START")
+	defer c.log.Info("go listenUpstream() FINISH")
 	for {
 		select {
 		case <-ws.Done(): // transport shutdown
@@ -415,8 +436,13 @@ func (c *Client) Listen() <-chan interface{} {
 // Close provides an interface for a user initiated shutdown.
 // Close will close the Done() channel.
 func (c *Client) Close() {
+	c.log.Info("go Close() START")
+	defer c.log.Info("go Close() FINISH")
 	c.lock.Lock()
 	defer c.lock.Unlock()
+	if c.terminal {
+		return
+	}
 	c.terminal = true
 	c.closeAsyncAndWait(c.parameters.ShutdownTimeout)
 	c.subscriptions.Close()

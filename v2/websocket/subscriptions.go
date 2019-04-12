@@ -163,6 +163,8 @@ func (s *subscriptions) sweep(exp time.Time) error {
 }
 
 func (s *subscriptions) control() {
+	s.log.Info("go control() START")
+	defer s.log.Info("go control() FINISH")
 	for {
 		select {
 		case <-s.hbShutdown:
