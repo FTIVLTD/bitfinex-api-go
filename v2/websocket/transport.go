@@ -9,12 +9,11 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/op/go-logging"
-
+	logger "github.com/FTIVLTD/logger/src"
 	"github.com/gorilla/websocket"
 )
 
-func newWs(baseURL string, logTransport bool, log *logging.Logger) *ws {
+func newWs(baseURL string, logTransport bool, log *logger.LoggerType) *ws {
 	return &ws{
 		BaseURL:      baseURL,
 		downstream:   make(chan []byte),
@@ -31,7 +30,7 @@ type ws struct {
 	TLSSkipVerify bool
 	downstream    chan []byte
 	logTransport  bool
-	log           *logging.Logger
+	log           *logger.LoggerType
 
 	quit chan error // signal to parent with error, if applicable
 }

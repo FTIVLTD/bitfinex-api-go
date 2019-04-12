@@ -1,9 +1,11 @@
 package websocket
 
 import (
+	"log"
+	"mmrobot/gateway/common"
 	"time"
 
-	"github.com/op/go-logging"
+	logger "github.com/FTIVLTD/logger/src"
 )
 
 // Parameters defines adapter behavior.
@@ -13,7 +15,7 @@ type Parameters struct {
 	ReconnectAttempts int
 	reconnectTry      int
 	ShutdownTimeout   time.Duration
-	Logger            *logging.Logger
+	Logger            *logger.LoggerType
 
 	ResubscribeOnReconnect bool
 
@@ -24,7 +26,12 @@ type Parameters struct {
 	ManageOrderbook bool
 }
 
-func NewDefaultParameters() *Parameters {
+func NewDefaultParameters(name, logLevel string) *Parameters {
+	logger, err := common.InitLogger(name)
+	if err != nil {
+		log.Fatalf("NewDefaultParameters() error = %s", err.Error())
+	}
+	logger.SetLogLevel(logLevel)
 	return &Parameters{
 		AutoReconnect:          true,
 		ReconnectInterval:      time.Second * 3,
@@ -36,6 +43,6 @@ func NewDefaultParameters() *Parameters {
 		ResubscribeOnReconnect: true,
 		HeartbeatTimeout:       time.Second * 15, // HB = 5s
 		LogTransport:           false,            // log transport send/recv
-		Logger:                 logging.MustGetLogger("bitfinex-ws"),
+		Logger:                 logger,
 	}
 }

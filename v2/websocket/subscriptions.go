@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/op/go-logging"
+	logger "github.com/FTIVLTD/logger/src"
 )
 
 type SubscriptionRequest struct {
@@ -91,7 +91,7 @@ func (s subscription) Pending() bool {
 	return s.pending
 }
 
-func newSubscriptions(heartbeatTimeout time.Duration, log *logging.Logger) *subscriptions {
+func newSubscriptions(heartbeatTimeout time.Duration, log *logger.LoggerType) *subscriptions {
 	subs := &subscriptions{
 		subsBySubID:  make(map[string]*subscription),
 		subsByChanID: make(map[int64]*subscription),
@@ -113,7 +113,7 @@ type heartbeat struct {
 
 type subscriptions struct {
 	lock sync.Mutex
-	log  *logging.Logger
+	log  *logger.LoggerType
 
 	subsBySubID  map[string]*subscription // subscription map indexed by subscription ID
 	subsByChanID map[int64]*subscription  // subscription map indexed by channel ID

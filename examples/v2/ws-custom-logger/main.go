@@ -3,30 +3,24 @@ package main
 import (
 	"context"
 	_ "net/http/pprof"
-	"os"
 
 	"github.com/FTIVLTD/bitfinex-api-go/v2"
 	"github.com/FTIVLTD/bitfinex-api-go/v2/websocket"
-	"github.com/op/go-logging"
+	logger "github.com/FTIVLTD/logger/src"
 )
 
 func main() {
-	// create a new go-logger instance
-	var log = logging.MustGetLogger("bfx-websocket")
-	// create string formatter
-	var format = logging.MustStringFormatter(
-		`%{color}%{time:15:04:05.000} %{shortfunc} ▶ %{level:.4s} %{id:03x}%{color:reset} %{message}`,
-	)
-	// apply to logging instance
-	backend := logging.NewLogBackend(os.Stderr, "", 0)
-	backendFormatter := logging.NewBackendFormatter(backend, format)
-	logging.SetBackend(backendFormatter)
+	// create a new logger instance
+	log, err := logger.InitLogger("bfx-websocket", "debug", "", logger.Ltimestamp|logger.LJSON)
+	if err != nil {
+		log.Fatalf("InitLogger() error = %s", err.Error())
+	}
 
 	// create websocket client and pass logger
 	p := websocket.NewDefaultParameters()
 	p.Logger = log
 	client := websocket.NewWithParams(p)
-	err := client.Connect()
+	err = client.Connect()
 	if err != nil {
 		log.Errorf("could not connect: %s", err.Error())
 		return

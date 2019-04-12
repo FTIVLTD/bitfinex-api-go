@@ -9,9 +9,8 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/op/go-logging"
-
 	"github.com/FTIVLTD/bitfinex-api-go/utils"
+	logger "github.com/FTIVLTD/logger/src"
 
 	"crypto/hmac"
 	"crypto/sha512"
@@ -107,7 +106,7 @@ type Client struct {
 	terminal           bool
 	resetSubscriptions []*subscription
 	init               bool
-	log                *logging.Logger
+	log                *logger.LoggerType
 
 	// connection & operational behavior
 	parameters *Parameters
@@ -157,12 +156,12 @@ func (c *Client) registerFactory(channel string, factory messageFactory) {
 
 // New creates a default client.
 func New() *Client {
-	return NewWithParams(NewDefaultParameters())
+	return NewWithParams(NewDefaultParameters("bitfinex", "warning"))
 }
 
 // NewWithAsyncFactory creates a new default client with a given asynchronous transport factory interface.
 func NewWithAsyncFactory(async AsynchronousFactory) *Client {
-	return NewWithParamsAsyncFactory(NewDefaultParameters(), async)
+	return NewWithParamsAsyncFactory(NewDefaultParameters("bitfinex", "warning"), async)
 }
 
 // NewWithParams creates a new default client with a given set of parameters.
@@ -172,7 +171,7 @@ func NewWithParams(params *Parameters) *Client {
 
 // NewWithAsyncFactoryNonce creates a new default client with a given asynchronous transport factory and nonce generator.
 func NewWithAsyncFactoryNonce(async AsynchronousFactory, nonce utils.NonceGenerator) *Client {
-	return NewWithParamsAsyncFactoryNonce(NewDefaultParameters(), async, nonce)
+	return NewWithParamsAsyncFactoryNonce(NewDefaultParameters("bitfinex", "warning"), async, nonce)
 }
 
 // NewWithParamsNonce creates a new default client with a given set of parameters and nonce generator.
