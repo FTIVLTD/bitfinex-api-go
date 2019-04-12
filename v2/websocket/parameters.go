@@ -1,8 +1,9 @@
 package websocket
 
 import (
-	"github.com/op/go-logging"
 	"time"
+
+	"github.com/op/go-logging"
 )
 
 // Parameters defines adapter behavior.
@@ -19,8 +20,8 @@ type Parameters struct {
 	HeartbeatTimeout time.Duration
 	LogTransport     bool
 
-	URL string
-	ManageOrderbook  bool
+	URL             string
+	ManageOrderbook bool
 }
 
 func NewDefaultParameters() *Parameters {
@@ -34,7 +35,7 @@ func NewDefaultParameters() *Parameters {
 		ShutdownTimeout:        time.Second * 5,
 		ResubscribeOnReconnect: true,
 		HeartbeatTimeout:       time.Second * 15, // HB = 5s
-		LogTransport:           false,           // log transport send/recv
+		LogTransport:           false,            // log transport send/recv
 		Logger:                 logging.MustGetLogger("bitfinex-ws"),
 	}
 }

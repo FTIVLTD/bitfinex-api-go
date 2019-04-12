@@ -2,13 +2,15 @@ package websocket
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/bitfinexcom/bitfinex-api-go/v2"
+
+	bitfinex "github.com/FTIVLTD/bitfinex-api-go/v2"
 )
 
 type FlagRequest struct {
 	Event string `json:"event"`
-	Flags int `json:"flags"`
+	Flags int    `json:"flags"`
 }
 
 // API for end-users to interact with Bitfinex.
@@ -123,4 +125,29 @@ func (c *Client) LookupSubscription(subID string) (*SubscriptionRequest, error) 
 		return nil, err
 	}
 	return s.Request, nil
+}
+
+// LookupSubsIDsBySymbol looks up a subscription IDs request by symbol.
+func (c *Client) LookupSubsIDsBySymbol(symbol string) (ret []string) {
+	sub := c.subscriptions.lookupBySymbol(symbol)
+	for _, s := range sub {
+		ret = append(ret, s.Request.SubID)
+	}
+	return
+}
+
+// LookupSubsIDByChannel looks up a subscription request by name and channel.
+func (c *Client) LookupSubsIDByChannel(symbol, channel string) (string, error) {
+	sub := c.subscriptions.lookupBySymbol(symbol)
+	for _, s := range sub {
+		if s.Request.Channel == channel {
+			return s.Request.SubID, nil
+		}
+	}
+	return "", errors.New("Not found")
+}
+
+// SubmitCancelMulti sends a multi cancel request.
+func (c *Client) SubmitCancelMulti(ctx context.Context, cancelMulti *bitfinex.MultiOrderCancelRequest) error {
+	return c.asynchronous.Send(ctx, cancelMulti)
 }

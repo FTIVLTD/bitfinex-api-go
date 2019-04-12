@@ -2,10 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/bitfinexcom/bitfinex-api-go/v2"
-	"github.com/bitfinexcom/bitfinex-api-go/v2/websocket"
 	"log"
 	_ "net/http/pprof"
+
+	"github.com/FTIVLTD/bitfinex-api-go/v2"
+	"github.com/FTIVLTD/bitfinex-api-go/v2/websocket"
 )
 
 func main() {

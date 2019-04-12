@@ -2,10 +2,11 @@ package rest
 
 import (
 	"bytes"
-	"github.com/bitfinexcom/bitfinex-api-go/v2"
 	"io/ioutil"
 	"net/http"
 	"testing"
+
+	"github.com/FTIVLTD/bitfinex-api-go/v2"
 )
 
 func TestBookAll(t *testing.T) {

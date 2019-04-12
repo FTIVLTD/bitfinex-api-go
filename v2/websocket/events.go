@@ -80,8 +80,10 @@ type ErrorEvent struct {
 }
 
 type UnsubscribeEvent struct {
-	Status string `json:"status"`
-	ChanID int64  `json:"chanId"`
+	Status  string `json:"status"`
+	ChanID  int64  `json:"chanId"`
+	Symbol  string `json:"symbol"`
+	Channel string `json:"channel"`
 }
 
 type SubscribeEvent struct {
@@ -154,8 +156,10 @@ func (c *Client) handleEvent(msg []byte) error {
 		if err != nil {
 			return err
 		}
-		err_rem := c.subscriptions.removeByChannelID(s.ChanID)
-		if err_rem != nil {
+		if sub, err_rem := c.subscriptions.removeByChannelID(s.ChanID); err_rem == nil {
+			s.Symbol = sub.Request.Symbol
+			s.Channel = sub.Request.Channel
+		} else {
 			return err_rem
 		}
 		c.listener <- &s

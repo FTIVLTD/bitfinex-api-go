@@ -1,13 +1,13 @@
 package main
 
 import (
-"flag"
-"log"
-"os"
-"github.com/bitfinexcom/bitfinex-api-go/v2/rest"
+	"flag"
+	"log"
+	"os"
+
+	"github.com/FTIVLTD/bitfinex-api-go/v2/rest"
 	"github.com/davecgh/go-spew/spew"
 )
-
 
 // Set BFX_APIKEY and BFX_SECRET as :
 //
@@ -25,14 +25,10 @@ func main() {
 
 	wallets, err := c.Wallet.Wallet()
 
-
 	if err != nil {
 		log.Fatalf("getting wallet %s", err)
 	}
 
 	spew.Dump(wallets)
 
-
-
 }
-

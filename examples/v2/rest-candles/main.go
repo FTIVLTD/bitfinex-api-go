@@ -1,16 +1,15 @@
 package main
 
 import (
-"log"
-bfx "github.com/bitfinexcom/bitfinex-api-go/v2"
-"github.com/bitfinexcom/bitfinex-api-go/v2/rest"
+	"log"
 	"time"
-)
 
+	bfx "github.com/FTIVLTD/bitfinex-api-go/v2"
+	"github.com/FTIVLTD/bitfinex-api-go/v2/rest"
+)
 
 func main() {
 	c := rest.NewClient()
-
 
 	log.Printf("1) Query Last Candle")
 	candle, err := c.Candles.Last(bfx.TradingPrefix+bfx.BTCUSD, bfx.FiveMinutes)
@@ -26,7 +25,6 @@ func main() {
 
 	prior := now.Add(time.Duration(-24) * time.Hour)
 	millisStart := prior.UnixNano() / 1000000
-
 
 	log.Printf("2) Query Candle History with no params")
 	candles, err := c.Candles.History(bfx.TradingPrefix+bfx.BTCUSD, bfx.FiveMinutes)
@@ -51,7 +49,7 @@ func main() {
 		end,
 		200,
 		bfx.OldestFirst,
-		)
+	)
 
 	if err != nil {
 		log.Fatalf("getting candles: %s", err)
@@ -61,7 +59,4 @@ func main() {
 	log.Printf("first candle is: %#v\n", candlesMore.Snapshot[0])
 	log.Printf("last candle is: %#v\n", candlesMore.Snapshot[len(candlesMore.Snapshot)-1])
 
-
-
 }
-

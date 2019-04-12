@@ -2,8 +2,9 @@ package rest
 
 import (
 	"fmt"
-	"github.com/bitfinexcom/bitfinex-api-go/v2"
 	"path"
+
+	"github.com/FTIVLTD/bitfinex-api-go/v2"
 )
 
 // OrderService manages data flow for the Order API endpoint

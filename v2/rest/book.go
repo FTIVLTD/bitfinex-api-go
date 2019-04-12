@@ -1,10 +1,11 @@
 package rest
 
 import (
-	"github.com/bitfinexcom/bitfinex-api-go/v2"
 	"net/url"
 	"path"
 	"strconv"
+
+	"github.com/FTIVLTD/bitfinex-api-go/v2"
 )
 
 type BookService struct {

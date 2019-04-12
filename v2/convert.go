@@ -1,8 +1,8 @@
 package bitfinex
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 	"strconv"
 )
 

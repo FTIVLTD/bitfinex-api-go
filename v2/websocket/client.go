@@ -4,19 +4,20 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/op/go-logging"
 	"strings"
 	"sync"
 	"time"
 	"unicode"
 
-	"github.com/bitfinexcom/bitfinex-api-go/utils"
+	"github.com/op/go-logging"
+
+	"github.com/FTIVLTD/bitfinex-api-go/utils"
 
 	"crypto/hmac"
 	"crypto/sha512"
 	"encoding/hex"
 
-	"github.com/bitfinexcom/bitfinex-api-go/v2"
+	"github.com/FTIVLTD/bitfinex-api-go/v2"
 )
 
 var productionBaseURL = "wss://api.bitfinex.com/ws/2"
@@ -93,7 +94,7 @@ func (w *WebsocketAsynchronousFactory) Create() Asynchronous {
 // Client provides a unified interface for users to interact with the Bitfinex V2 Websocket API.
 // nolint:megacheck,structcheck
 type Client struct {
-	asyncFactory       AsynchronousFactory // for re-creating transport during reconnects
+	asyncFactory AsynchronousFactory // for re-creating transport during reconnects
 
 	timeout            int64 // read timeout
 	apiKey             string
@@ -109,23 +110,23 @@ type Client struct {
 	log                *logging.Logger
 
 	// connection & operational behavior
-	parameters         *Parameters
+	parameters *Parameters
 
 	// subscription manager
-	subscriptions      *subscriptions
-	factories          map[string]messageFactory
-	orderbooks         map[string]*Orderbook
+	subscriptions *subscriptions
+	factories     map[string]messageFactory
+	orderbooks    map[string]*Orderbook
 
 	// close signal sent to user on shutdown
-	shutdown           chan bool
-	resetWebsocket     chan bool
+	shutdown       chan bool
+	resetWebsocket chan bool
 
 	// downstream listener channel to deliver API objects
-	listener           chan interface{}
+	listener chan interface{}
 
 	// race management
-	lock               sync.Mutex
-	waitGroup          sync.WaitGroup
+	lock      sync.Mutex
+	waitGroup sync.WaitGroup
 }
 
 // Credentials assigns authentication credentials to a connection request.
@@ -236,7 +237,7 @@ func (c *Client) IsConnected() bool {
 func (c *Client) listenDisconnect() {
 	for {
 		select {
-		case <- c.resetWebsocket:
+		case <-c.resetWebsocket:
 			// transport websocket is shutting down
 			c.lock.Lock()
 			c.isConnected = false
@@ -248,10 +249,10 @@ func (c *Client) listenDisconnect() {
 				// exit routine if failed to reconnect
 				return
 			}
-		case <- c.shutdown:
+		case <-c.shutdown:
 			// websocket client killed completely
 			return
-		case e := <- c.subscriptions.ListenDisconnect(): // subscription heartbeat timeout
+		case e := <-c.subscriptions.ListenDisconnect(): // subscription heartbeat timeout
 			if e != nil {
 				c.log.Warningf("heartbeat disconnect: %s", e.Error())
 			}
@@ -354,15 +355,14 @@ func (c *Client) reconnect(err error) error {
 	return err
 }
 
-
 // start this goroutine before connecting, but this should die during a connection failure
 func (c *Client) listenUpstream(ws Asynchronous) {
 	for {
 		select {
-		case <- ws.Done(): // transport shutdown
+		case <-ws.Done(): // transport shutdown
 			c.resetWebsocket <- true
 			return
-		case msg := <- ws.Listen():
+		case msg := <-ws.Listen():
 			if msg != nil {
 				// Errors here should be non critical so we just log them.
 				// log.Printf("[DEBUG]: %s\n", msg)
@@ -432,7 +432,7 @@ func (c *Client) Close() {
 	select {
 	case <-c.asynchronous.Done():
 		close(c.shutdown) // kill reset socket listener
-		return // successful cleanup
+		return            // successful cleanup
 	case <-timeout:
 		c.log.Debug("shutdown timed out")
 		return

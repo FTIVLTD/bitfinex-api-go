@@ -5,10 +5,11 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
-	"github.com/op/go-logging"
 	"net"
 	"net/http"
 	"sync"
+
+	"github.com/op/go-logging"
 
 	"github.com/gorilla/websocket"
 )
@@ -32,7 +33,7 @@ type ws struct {
 	logTransport  bool
 	log           *logging.Logger
 
-	quit chan error    // signal to parent with error, if applicable
+	quit chan error // signal to parent with error, if applicable
 }
 
 func (w *ws) Connect() error {
@@ -77,16 +78,16 @@ func (w *ws) Send(ctx context.Context, msg interface{}) error {
 	}
 
 	select {
-	case <- ctx.Done():
+	case <-ctx.Done():
 		return ctx.Err()
-	case <- w.quit: // ws closed
+	case <-w.quit: // ws closed
 		return fmt.Errorf("websocket connection closed")
 	default:
 	}
 
 	w.wsLock.Lock()
 	defer w.wsLock.Unlock()
-		w.log.Debug("ws->srv: %s", string(bs))
+	w.log.Debug("ws->srv: %s", string(bs))
 	err = w.ws.WriteMessage(websocket.TextMessage, bs)
 	if err != nil {
 		return err
@@ -134,8 +135,8 @@ func (w *ws) Listen() <-chan []byte {
 
 func (w *ws) cleanup(err error) {
 	w.stop()
-	w.quit <- err	// pass error back
-	close(w.quit) // signal to parent listeners
+	w.quit <- err       // pass error back
+	close(w.quit)       // signal to parent listeners
 	close(w.downstream) // shut down caller's listen channel
 }
 

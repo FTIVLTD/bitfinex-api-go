@@ -1,10 +1,11 @@
 package websocket
 
 import (
-	"github.com/bitfinexcom/bitfinex-api-go/v2"
-	"sync"
-	"strings"
 	"encoding/json"
+	"strings"
+	"sync"
+
+	"github.com/FTIVLTD/bitfinex-api-go/v2"
 )
 
 type messageFactory interface {
@@ -71,16 +72,16 @@ func (f *TradeFactory) BuildSnapshot(chanID int64, raw [][]float64, raw_bytes []
 
 type BookFactory struct {
 	*subscriptions
-	orderbooks     map[string]*Orderbook
-	manageBooks    bool
-	lock           sync.Mutex
+	orderbooks  map[string]*Orderbook
+	manageBooks bool
+	lock        sync.Mutex
 }
 
 func newBookFactory(subs *subscriptions, obs map[string]*Orderbook, manageBooks bool) *BookFactory {
 	return &BookFactory{
 		subscriptions: subs,
-		orderbooks: obs,
-		manageBooks: manageBooks,
+		orderbooks:    obs,
+		manageBooks:   manageBooks,
 	}
 }
 
@@ -88,7 +89,7 @@ func ConvertBytesToJsonNumberArray(raw_bytes []byte) ([]interface{}, error) {
 	var raw_json_number []interface{}
 	d := json.NewDecoder(strings.NewReader(string(raw_bytes)))
 	d.UseNumber()
-	str_conv_err := d.Decode(&raw_json_number);
+	str_conv_err := d.Decode(&raw_json_number)
 	if str_conv_err != nil {
 		return nil, str_conv_err
 	}

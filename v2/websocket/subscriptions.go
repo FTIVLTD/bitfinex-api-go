@@ -2,11 +2,12 @@ package websocket
 
 import (
 	"fmt"
-	"github.com/op/go-logging"
 	"sort"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/op/go-logging"
 )
 
 type SubscriptionRequest struct {
@@ -111,8 +112,8 @@ type heartbeat struct {
 }
 
 type subscriptions struct {
-	lock         sync.Mutex
-	log          *logging.Logger
+	lock sync.Mutex
+	log  *logging.Logger
 
 	subsBySubID  map[string]*subscription // subscription map indexed by subscription ID
 	subsByChanID map[int64]*subscription  // subscription map indexed by channel ID
@@ -220,18 +221,18 @@ func (s *subscriptions) add(sub *SubscriptionRequest) *subscription {
 	return subscription
 }
 
-func (s *subscriptions) removeByChannelID(chanID int64) error {
+func (s *subscriptions) removeByChannelID(chanID int64) (*subscription, error) {
 	s.lock.Lock()
 	defer s.lock.Unlock()
 	sub, ok := s.subsByChanID[chanID]
 	if !ok {
-		return fmt.Errorf("could not find channel ID %d", chanID)
+		return nil, fmt.Errorf("could not find channel ID %d", chanID)
 	}
 	delete(s.subsByChanID, chanID)
 	if _, ok = s.subsBySubID[sub.SubID()]; ok {
 		delete(s.subsBySubID, sub.SubID())
 	}
-	return nil
+	return sub, nil
 }
 
 // nolint:megacheck
@@ -283,4 +284,15 @@ func (s *subscriptions) lookupBySubscriptionID(subID string) (*subscription, err
 		return sub, nil
 	}
 	return nil, fmt.Errorf("could not find subscription ID %s", subID)
+}
+
+func (s *subscriptions) lookupBySymbol(symbol string) (ret []*subscription) {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+	for _, sub := range s.subsByChanID {
+		if sub.Request.Symbol == symbol {
+			ret = append(ret, sub)
+		}
+	}
+	return
 }

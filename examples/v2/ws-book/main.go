@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/bitfinexcom/bitfinex-api-go/v2"
-	"github.com/bitfinexcom/bitfinex-api-go/v2/websocket"
+	"github.com/FTIVLTD/bitfinex-api-go/v2"
+	"github.com/FTIVLTD/bitfinex-api-go/v2/websocket"
 )
 
 func main() {
@@ -45,7 +45,7 @@ func main() {
 		log.Printf("MSG RECV: %#v", obj)
 
 		// Load the latest orderbook
-		ob, _ := c.GetOrderbook(bitfinex.TradingPrefix+bitfinex.BTCUSD)
+		ob, _ := c.GetOrderbook(bitfinex.TradingPrefix + bitfinex.BTCUSD)
 		if ob != nil {
 			log.Printf("Orderbook asks: %v", ob.Asks())
 			log.Printf("Orderbook asks: %v", ob.Bids())
