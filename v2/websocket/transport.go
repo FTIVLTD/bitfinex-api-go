@@ -88,6 +88,9 @@ func (w *ws) Send(ctx context.Context, msg interface{}) error {
 
 	w.wsLock.Lock()
 	defer w.wsLock.Unlock()
+	if w.ws == nil {
+		return ErrWSNotConnected
+	}
 	w.log.Debug("ws->srv: %s", string(bs))
 	err = w.ws.WriteMessage(websocket.TextMessage, bs)
 	if err != nil {
