@@ -36,13 +36,13 @@ func NewDefaultParameters(name, logLevel string) *Parameters {
 		AutoReconnect:          true,
 		ReconnectInterval:      time.Second * 3,
 		reconnectTry:           0,
-		ReconnectAttempts:      5,
+		ReconnectAttempts:      15,
 		URL:                    productionBaseURL,
 		ManageOrderbook:        false,
 		ShutdownTimeout:        time.Second * 5,
 		ResubscribeOnReconnect: true,
-		HeartbeatTimeout:       time.Second * 15, // HB = 5s
-		LogTransport:           false,            // log transport send/recv
+		HeartbeatTimeout:       time.Second * 30,
+		LogTransport:           false, // log transport send/recv
 		Logger:                 logger,
 	}
 }
