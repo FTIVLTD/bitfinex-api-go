@@ -234,8 +234,8 @@ func (c *Client) IsConnected() bool {
 }
 
 func (c *Client) listenDisconnect() {
-	c.log.Info("go listenDisconnect() START")
-	defer c.log.Info("go listenDisconnect() FINISH")
+	c.log.Infof("go listenDisconnect() START")
+	defer c.log.Infof("go listenDisconnect() FINISH")
 	for {
 		select {
 		case <-c.resetWebsocket:
@@ -375,8 +375,8 @@ func (c *Client) reconnect(err error) error {
 
 // start this goroutine before connecting, but this should die during a connection failure
 func (c *Client) listenUpstream(ws Asynchronous) {
-	c.log.Info("go listenUpstream() START")
-	defer c.log.Info("go listenUpstream() FINISH")
+	c.log.Infof("go listenUpstream() START")
+	defer c.log.Infof("go listenUpstream() FINISH")
 	for {
 		select {
 		case <-ws.Done(): // transport shutdown
@@ -436,8 +436,8 @@ func (c *Client) Listen() <-chan interface{} {
 // Close provides an interface for a user initiated shutdown.
 // Close will close the Done() channel.
 func (c *Client) Close() {
-	c.log.Info("go Close() START")
-	defer c.log.Info("go Close() FINISH")
+	c.log.Infof("go Close() START")
+	defer c.log.Infof("go Close() FINISH")
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	if c.terminal {
@@ -521,7 +521,7 @@ func (c *Client) handleAuthAck(auth *AuthEvent) {
 		}
 		c.checkResubscription()
 	} else {
-		c.log.Error("authentication failed")
+		c.log.Errorf("authentication failed")
 	}
 }
 

@@ -163,8 +163,8 @@ func (s *subscriptions) sweep(exp time.Time) error {
 }
 
 func (s *subscriptions) control() {
-	s.log.Info("go control() START")
-	defer s.log.Info("go control() FINISH")
+	s.log.Infof("go control() START")
+	defer s.log.Infof("go control() FINISH")
 	for {
 		select {
 		case <-s.hbShutdown:
@@ -258,7 +258,7 @@ func (s *subscriptions) activate(subID string, chanID int64) error {
 	defer s.lock.Unlock()
 	if sub, ok := s.subsBySubID[subID]; ok {
 		if chanID != 0 {
-			s.log.Info("activated subscription %s %s for channel %d", sub.Request.Channel, sub.Request.Symbol, chanID)
+			s.log.Infof("activated subscription %s %s for channel %d", sub.Request.Channel, sub.Request.Symbol, chanID)
 		}
 		sub.pending = false
 		sub.ChanID = chanID

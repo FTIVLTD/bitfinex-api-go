@@ -50,7 +50,7 @@ func (w *ws) Connect() error {
 
 	d.TLSClientConfig = &tls.Config{InsecureSkipVerify: w.TLSSkipVerify}
 
-	w.log.Info("connecting ws to %s", w.BaseURL)
+	w.log.Infof("connecting to %s", w.BaseURL)
 	ws, resp, err := d.Dial(w.BaseURL, nil)
 	if err != nil {
 		if err == websocket.ErrBadHandshake {
@@ -91,7 +91,7 @@ func (w *ws) Send(ctx context.Context, msg interface{}) error {
 	if w.ws == nil {
 		return ErrWSNotConnected
 	}
-	w.log.Debug("ws->srv: %s", string(bs))
+	w.log.Debugf("ws->srv: %s", string(bs))
 	err = w.ws.WriteMessage(websocket.TextMessage, bs)
 	if err != nil {
 		return err
@@ -105,8 +105,8 @@ func (w *ws) Done() <-chan error {
 
 // listen on ws & fwd to listen()
 func (w *ws) listenWs() {
-	w.log.Info("go listenWs() START")
-	defer w.log.Info("go listenWs() FINISH")
+	w.log.Infof("go listenWs() START")
+	defer w.log.Infof("go listenWs() FINISH")
 	for {
 		if w.ws == nil {
 			return
@@ -124,7 +124,7 @@ func (w *ws) listenWs() {
 				// a read during normal shutdown results in an OpError: op on closed connection
 				if _, ok := err.(*net.OpError); ok {
 					// general read error on a closed network connection, OK
-					w.log.Error("go listenWs: general read error on a closed network connection")
+					w.log.Errorf("go listenWs: general read error on a closed network connection")
 					//return
 				}
 				w.cleanup(err)
