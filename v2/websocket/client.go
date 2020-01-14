@@ -230,6 +230,8 @@ func (c *Client) registerPublicFactories() {
 
 // IsConnected returns true if the underlying asynchronous transport is connected to an endpoint.
 func (c *Client) IsConnected() bool {
+	c.lock.Lock()
+	defer c.lock.Unlock()
 	return c.isConnected
 }
 
@@ -238,14 +240,22 @@ func (c *Client) listenDisconnect() {
 	defer c.log.Infof("go listenDisconnect() FINISH")
 	for {
 		select {
-		case <-c.resetWebsocket:
-			if !c.isConnected {
+		case _, ok := <-c.resetWebsocket:
+			if !ok {
 				continue
 			}
-			// transport websocket is shutting down
+
+			toCont := false
 			c.lock.Lock()
-			c.isConnected = false
+			if c.isConnected {
+				c.isConnected = false
+			} else {
+				toCont = true
+			}
 			c.lock.Unlock()
+			if toCont {
+				continue
+			}
 			err := c.reconnect(fmt.Errorf("reconnecting"))
 			if err != nil {
 				c.killListener(err)
@@ -320,10 +330,8 @@ func (c *Client) reset() {
 	}
 	c.init = true
 	ws := c.asyncFactory.Create()
+	c.asynchronous.Close()
 	c.asynchronous = ws
-
-	// listen to data from async
-	go c.listenUpstream(ws)
 }
 
 func (c *Client) connect() error {
@@ -331,7 +339,13 @@ func (c *Client) connect() error {
 	if err != nil {
 		return err
 	}
+
+	// listen to data from async
+	go c.listenUpstream(c.asynchronous)
+	c.lock.Lock()
 	c.isConnected = true
+	c.lock.Unlock()
+
 	// enable flag
 	if c.parameters.ManageOrderbook {
 		ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -357,11 +371,9 @@ func (c *Client) reconnect(err error) error {
 	for ; reconnectTry < c.parameters.ReconnectAttempts; reconnectTry++ {
 		c.log.Debugf("waiting %s until reconnect...", c.parameters.ReconnectInterval)
 		time.Sleep(c.parameters.ReconnectInterval)
-		c.log.Infof("reconnect attempt %d/%d", reconnectTry+1, c.parameters.ReconnectAttempts)
 		c.reset()
 		err = c.connect()
 		if err == nil {
-			c.log.Debugf("reconnect OK")
 			reconnectTry = 0
 			return nil
 		}
