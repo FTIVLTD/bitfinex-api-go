@@ -71,6 +71,7 @@ func (w *ws) Connect() error {
 func (w *ws) Send(ctx context.Context, msg interface{}) error {
 	w.wsLock.Lock()
 	if w.ws == nil {
+		w.wsLock.Unlock()
 		return ErrWSNotConnected
 	}
 	w.wsLock.Unlock()
